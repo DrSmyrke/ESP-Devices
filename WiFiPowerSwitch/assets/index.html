@@ -1,0 +1,61 @@
+<script type="text/javascript">
+function portAction( elem )
+{
+	var func = ( elem.checked ) ? "portOn" : "portOff";
+	request.open( 'GET', '/set?' + func + '=' + elem.lang, true );request.send(null);
+}
+
+request.onreadystatechange=function()
+{
+	if( request.readyState == 4 && request.status == 200 ){
+		console.log(request.responseText);
+	}
+};
+</script>
+
+
+<style>
+.checkbox-label {
+  display: block;
+  background: #f3f3f3;
+  height: 30px;
+  width: 60px;
+  border-radius: 30px;
+  margin: 15px auto;
+  position: relative;
+  box-shadow: 0 0 0 2px #dddddd;
+}
+.checkbox-label:before {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  border-radius: 30px;
+  height: 30px;
+  width: 30px;
+  background: white;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2), 0 0 0 2px #dddddd;
+}
+.checkbox {
+  position: absolute;
+  left: -5000px;
+}
+.checkbox:checked + .checkbox-label {
+  background: #13bf11;
+  box-shadow: 0 0 0 2px #13bf11;
+}
+.checkbox:checked + .checkbox-label:before {
+  left: 30px;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2), 0 0 0 2px #13bf11;
+}
+ td:first-child{
+	text-align: left;
+	padding-left: 30px;
+	font-weight: bold;
+	font-size: 16pt;
+}
+td:last-child{ width: 150px; }
+</style>
+
