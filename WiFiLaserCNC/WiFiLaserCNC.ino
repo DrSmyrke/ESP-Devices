@@ -62,7 +62,6 @@ void loop()
 	
 	while( Serial.available() ) {
 		char inChar = (char)Serial.read();
-		conf.responseStr += inChar;
 		if (inChar == '\n') {
 			if( conf.responseStr == "ok" ){
 				start_execution();
@@ -72,7 +71,8 @@ void loop()
 			}
 			conf.response = conf.responseStr;
 			conf.responseStr = "";
+			continue;
 		}
-		
+		conf.responseStr += inChar;
     }
 }

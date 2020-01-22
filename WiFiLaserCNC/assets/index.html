@@ -61,7 +61,7 @@ function sendCommand( cmdForm )
 		if( array[i].name == "cmdLine" ){
 			request.open( 'GET', '/gcode?' + array[i].name + '=' + array[i].value, true );request.send(null);
 			cmdlineField = array[i];
-			setTimeout( "cmdState()", 500 );
+			setTimeout( "cmdState()", 1000 );
 			cmdHistory. innerHTML += ">:" + array[i].value + "<br>";
 			break;
 		}
