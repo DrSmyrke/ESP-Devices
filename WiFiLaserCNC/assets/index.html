@@ -58,6 +58,8 @@ function sendCommand( cmdForm )
 	for( var i = 0; i < array.length; i++ ){
 		if( array[i].name == "" ) continue;
 		if( array[i].name == "cmdLine" ){
+			cmdLineAnsver.innerHTML = "Processing...";
+			cmdLineAnsver.className = "valorange";
 			request.open( 'GET', '/gcode?' + array[i].name + '=' + array[i].value, true );request.send(null);
 			setTimeout( "cmdState()", 1000 );
 			cmdHistory.innerHTML += ">:" + array[i].value + "<br>";
