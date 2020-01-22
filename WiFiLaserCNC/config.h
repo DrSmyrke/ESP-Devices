@@ -49,11 +49,15 @@ struct MyConf{
 	char devLogin[ PARAM_SIZE ];
 	char devPass[ PARAM_SIZE ];
 	char devName[ PARAM_SIZE ];
-	String version					= "0.1";
+	String version					= "0.2";
 	uint8_t uploadType				= 0;
 	bool spiffsActive				= false;
 	uint16 lineNum					= 0;
 	bool softAPen					= false;
+	uint8_t cmdState				= 0;
+	String responseStr				= "";
+	String response					= "";
+	char buff[32];
 };
 
 MyConf conf;

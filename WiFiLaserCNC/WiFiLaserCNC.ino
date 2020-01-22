@@ -14,11 +14,8 @@ void setup()
 	portInit();
 	if (SPIFFS.begin()) conf.spiffsActive = true;
 	delay(300);
-	Serial.print("spiffsActive :");Serial.println(conf.spiffsActive);
-	Serial.println("Configure system...");
 	setDefaultConfig();
 	delay(300);
-	Serial.println("Reconfigure system...");
 	iniConfPars( CONFFILE );
 	delay(100);
 	wifi_init();
@@ -27,7 +24,8 @@ void setup()
 	webServer.on("/config", httpHandleSettings);
 	webServer.on("/admin", httpHandleAdminKa);
 	webServer.on("/set", handleSet);
-	//webServer.on("/get", HTTP_POST, handleGet);
+	webServer.on("/gcode", handleGcode);
+	webServer.on("/get", handleGet);
 	webServer.on("/upload", HTTP_POST, [](){}, handleUpload);
 	webServer.on(CONFFILE, httpGetConfig);
 	webServer.onNotFound(httpHandleNotFound);
@@ -49,14 +47,30 @@ void setup()
 
 	//SPIFFS.format();
 
+	conf.responseStr.reserve( 128 );
+	conf.response.reserve( 128 );
 	
 	
 	delay(100);
 	timer_init();
-	Serial.println("Init complete");
 }
 
 void loop()
 {
 	webServer.handleClient();
+	
+	while( Serial.available() ) {
+		char inChar = (char)Serial.read();
+		conf.responseStr += inChar;
+		if (inChar == '\n') {
+			if( conf.responseStr == "ok" ){
+				conf.cmdState = 0;
+			}else{
+				conf.cmdState = 2;
+			}
+			conf.response = conf.responseStr;
+			conf.responseStr = "";
+		}
+		
+    }
 }

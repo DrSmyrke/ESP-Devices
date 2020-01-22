@@ -18,7 +18,24 @@ String getWebPageJS(void)
 String getWebHomePage(void)
 {
 	String str = "<table width=\"100%\">";
+	if( conf.spiffsActive ){
+		Dir dir = SPIFFS.openDir("/");
+		while (dir.next()) {
+			if( !dir.fileName().endsWith(".gcode") && !dir.fileName().endsWith(".nc") ) continue;
+			str += "<tr><td>";
+			str += "<a href=\"/get?file=" + String( dir.fileName() ) + "\">" + String( dir.fileName() ) + "</a></td><td>" + String( dir.fileSize() );
+			str += "</td><td>";
+			str += "<a href=\"javascript:void(0);\" onClick=\"execute('" + String( dir.fileName() ) + "');\">EXECUTE<a> | ";
+			//str += "<a href=\"/set&remove=" + String( dir.fileName() ) + "\">REMOVE<a>";
+			str += "</td></tr>";
+		}
+	}
+	
+	str += "</table>";
+	
 	/*
+	
+	String str = "<table width=\"100%\">";
 	for( uint8_t i = 0; i < conf.relayNum; i++ ){
 		String state = ( CheckBit( conf.relayState, i ) ) ? " checked" : "" ;
 		str += "<tr><td>" + String( getPortName(i) ) + "</td><td> <input class=\"checkbox\" id=\"port" + String(i) + "\" type=\"checkbox\" lang=\"" + String(i) + "\" onClick=\"portAction( this );\"" + state + "/> <label for=\"port" + String(i) + "\" class=\"checkbox-label\"></label> </td></tr>";
@@ -26,7 +43,7 @@ String getWebHomePage(void)
 	str += "</table>";
 	*/
 
-	return str + "<script type=\"text/javascript\"> function portAction( elem ) { var func = ( elem.checked ) ? \"portOn\" : \"portOff\"; request.open( 'GET', '/set?' + func + '=' + elem.lang, true );request.send(null); } request.onreadystatechange=function() { if( request.readyState == 4 && request.status == 200 ){ console.log(request.responseText); } }; </script> <style> .checkbox-label { display: block; background: #f3f3f3; height: 30px; width: 60px; border-radius: 30px; margin: 15px auto; position: relative; box-shadow: 0 0 0 2px #dddddd; } .checkbox-label:before { content: ''; display: block; position: absolute; z-index: 1; top: 0; left: 0; border-radius: 30px; height: 30px; width: 30px; background: white; box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2), 0 0 0 2px #dddddd; } .checkbox { position: absolute; left: -5000px; } .checkbox:checked + .checkbox-label { background: #13bf11; box-shadow: 0 0 0 2px #13bf11; } .checkbox:checked + .checkbox-label:before { left: 30px; box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2), 0 0 0 2px #13bf11; } td:first-child{ text-align: left; padding-left: 30px; font-weight: bold; font-size: 16pt; } td:last-child{ width: 150px; } </style>";
+	return "<fieldset class=\"block\"><legend>Files</legend> " + str + " </fieldset> <fieldset class=\"block\"><legend>History</legend> <span id=\"cmd_histroy\"></span> </fieldset> <fieldset class=\"block\"><legend>G CODE Line box</legend> <form onSubmit=\"return sendCommand(this);\"> <input type=\"text\" placeholder=\"G-CODe\" name=\"cmdLine\"> <input type=\"submit\" value=\"SEND\"> <span id=\"cmd_line_answer\"></span> </form> </fieldset> <script type=\"text/javascript\"> var cmdLineAnsver = document.getElementById(\"cmd_line_answer\"); var cmdHistory = document.getElementById(\"cmd_histroy\"); var cmdlineField; function execute( filename ) { var x = confirm( \"Continue execute programm: \" + filename + \"?\" ); if( x ){ var str = \"execute=\" + filename; request.open( 'POST', \"/set\", true ); request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); request.send(str); } } function sendCommand( cmdForm ) { var array = cmdForm.getElementsByTagName(\"INPUT\"); for( var i = 0; i < array.length; i++ ){ if( array[i].name == \"\" ) continue; if( array[i].name == \"cmdLine\" ){ request.open( 'GET', '/gcode?' + array[i].name + '=' + array[i].value, true );request.send(null); cmdlineField = array[i]; setTimeout( \"cmdState()\", 500 ); cmdHistory. innerHTML += \">:\" + array[i].value + \"<br>\"; break; } } return false; } function cmdState() { request.open( 'GET', \"/get&cmdState=NULL&cmdResp=NULL\", true ); } request.onreadystatechange=function() { if( request.readyState == 4 && request.status == 200 ){ var tmp = request.responseText.split(\"	\"); if( tmp[0] == \"get\" ){ for( i = 1; i < tmp.length; i++ ){ var valParam = tmp[i].split(\"=\"); if( valParam.length != 2 ) continue; if( valParam[0] == \"cmdState\" ){ if( valParam[1] == 0 ){ cmdLineAnsver.className = \"valgreen\"; cmdlineField.disabled = false; } if( valParam[1] == 1 ){ cmdlineField.disabled = true; cmdLineAnsver.innerHTML = \"Processing...\"; cmdLineAnsver.className = \"valorange\"; setTimeout( \"cmdState()\", 1000 ); } if( valParam[1] == 2 ){ cmdLineAnsver.className = \"valorange\"; cmdlineField.disabled = false; } } if( valParam[0] == \"cmdResp\" && valParam[1].length > 0 ){ cmdLineAnsver.innerHTML = valParam[1]; cmdHistory. innerHTML += \"<i>\" + valParam[1] + \"</i><br>\"; } } } } }; </script> <style> .checkbox-label { display: block; background: #f3f3f3; height: 30px; width: 60px; border-radius: 30px; margin: 15px auto; position: relative; box-shadow: 0 0 0 2px #dddddd; } .checkbox-label:before { content: ''; display: block; position: absolute; z-index: 1; top: 0; left: 0; border-radius: 30px; height: 30px; width: 30px; background: white; box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2), 0 0 0 2px #dddddd; } .checkbox { position: absolute; left: -5000px; } .checkbox:checked + .checkbox-label { background: #13bf11; box-shadow: 0 0 0 2px #13bf11; } .checkbox:checked + .checkbox-label:before { left: 30px; box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2), 0 0 0 2px #13bf11; } </style> ";
 }
 
 String getWebSettingsPage(void)

@@ -104,7 +104,7 @@ void httpHandleNotFound(void)
 	webServer.sendContent( getWebPageBottom() );
 }
 
-/*
+
 void handleGet(void)
 {
 	if( !http_auth_check() ) return;
@@ -114,29 +114,37 @@ void handleGet(void)
 	for (uint8_t i = 0; i < webServer.args(); i++) {
 		retStr += "	" + webServer.argName(i) + "=";
 
-		if( webServer.argName(i) == "SwitchState" )			retStr += conf.relayState;
-		if( webServer.argName(i) == "SwitchMode" )			retStr += conf.relayMode;
-		if( webServer.argName(i) == "SwitchCount" )			retStr += conf.relayNum;
-
-		if( webServer.argName(i) == "DevName" )				retStr += ;
-		if( webServer.argName(i) == "DevMAC" )				retStr += ;
-		if( webServer.argName(i) == "DevAccessPointIP" )	retStr += ;
-		if( webServer.argName(i) == "DevClientIP" )			retStr += ;
-		if( webServer.argName(i) == "DevClientState" )		retStr += ;
-		if( webServer.argName(i) == "DevVersion" )			retStr += ;
-		if( webServer.argName(i) == "DevAccessPointSSID" )	retStr += conf.APWifiSSID;
-		if( webServer.argName(i) == "DevAccessPointPass" )	retStr += conf.APWifiPass;
-		if( webServer.argName(i) == "DevClientSSID" )		retStr += conf.clientWifiSSID;
-		if( webServer.argName(i) == "DevClientPass" )		retStr += conf.clientWifiPass;
-		if( webServer.argName(i) == "DevSendUrl" )			retStr += conf.sendUrl;
-		if( webServer.argName(i) == "DevLogin" )			retStr += conf.devLogin;
-		if( webServer.argName(i) == "DevPass" )				retStr += conf.devPass;
-
+		if( webServer.argName(i) == "cmdState" )				retStr += conf.cmdState;
+		if( webServer.argName(i) == "cmdResp" )					retStr += conf.response;
+		if( webServer.argName(i) == "file" ){
+			webServer.arg(i).toCharArray( conf.buff, sizeof(conf.buff));
+			http_send_file( conf.buff, "plain/text" );
+			return;
+		}
 	}
 
 	webServer.send(200, "text/html", retStr );
 }
-*/
+
+void handleGcode(void)
+{
+	if( !http_auth_check() ) return;
+
+	bool error				= false;
+	bool saveSettings		= false;
+	String ret				= "";
+	
+	for (uint8_t i = 0; i < webServer.args(); i++) {
+		String value = webServer.arg(i);
+		if( webServer.argName(i) == "cmdLine" ){
+			Serial.println( webServer.arg(i) );
+			conf.cmdState = 1;
+		}
+	}
+	
+	webServer.send(200, "text/html", "" );
+}
+
 void handleSet(void)
 {
 	if( !http_auth_check() ) return;
@@ -153,6 +161,10 @@ void handleSet(void)
 			error = true;
 			break;
 		}
+		if( webServer.argName(i) == "remove" ){
+			SPIFFS.remove(webServer.arg(i));
+			break;
+		}
 		if( webServer.argName(i) == "reconf" ){
 			SPIFFS.remove(CONFFILE);
 			break;
@@ -162,6 +174,10 @@ void handleSet(void)
 			ESP.restart();
 			error = true;
 			break;
+		}
+		
+		if( webServer.argName(i) == "execute" ){
+			Serial.println(webServer.arg(i));
 		}
 
 		if( webServer.argName(i) == "portOn" ){
@@ -230,6 +246,10 @@ void handleUpload(void)
 			filename = upload.filename;
 			if(!filename.startsWith("/")) filename = "/"+filename;
 
+			if( filename.endsWith(".gcode") || filename.endsWith(".nc") ){
+				conf.uploadType = upload_type_file;
+				fsUploadFile = SPIFFS.open(filename, "w");
+			}
 			if( filename == CONFFILE ){
 				conf.uploadType = upload_type_file;
 				fsUploadFile = SPIFFS.open(CONFFILE, "w");
@@ -243,8 +263,6 @@ void handleUpload(void)
 		break;
 		case UPLOAD_FILE_WRITE:
 			if( conf.uploadType == upload_type_file && fsUploadFile ) fsUploadFile.write(upload.buf,upload.currentSize);
-			//if( fsUploadFile) fsUploadFile.write(upload.buf,upload.currentSize);
-			//if(Update.write(upload.buf, upload.currentSize) != upload.currentSize)
 			if( conf.uploadType == upload_type_firmware) Update.write(upload.buf, upload.currentSize);
 		break;
 		case UPLOAD_FILE_END:
@@ -256,9 +274,6 @@ void handleUpload(void)
 			}
 			if( conf.uploadType == upload_type_firmware){
 				if( Update.end(true) ){
-					//webServer.sendHeader("Location","/config");
-					//webServer.send(303);
-					//delay(500);
 					ESP.restart();
 				}else{
 					webServer.send(500, "text/html", "Upload error" );
