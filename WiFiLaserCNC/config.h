@@ -52,11 +52,14 @@ struct MyConf{
 	String version					= "0.2";
 	uint8_t uploadType				= 0;
 	bool spiffsActive				= false;
-	uint16 lineNum					= 0;
+	uint16_t lineNum				= 0;
+	uint32_t lastPosition			= 0;
+	bool execute					= false;
 	bool softAPen					= false;
 	uint8_t cmdState				= 0;
 	String responseStr				= "";
 	String response					= "";
+	String execFile					= "";
 	char buff[32];
 };
 

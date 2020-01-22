@@ -177,7 +177,21 @@ void handleSet(void)
 		}
 		
 		if( webServer.argName(i) == "execute" ){
-			Serial.println(webServer.arg(i));
+			conf.lineNum = 0;
+			conf.lastPosition = 0;
+			conf.execute = true;
+			conf.execFile = webServer.arg(i);
+			webServer.send(200, "text/html", "" );
+			start_execution();
+			return;
+		}
+		if( webServer.argName(i) == "stopexecute" ){
+			conf.lineNum = 0;
+			conf.lastPosition = 0;
+			conf.execute = false;
+			conf.execFile = "";
+			webServer.send(200, "text/html", "" );
+			return;
 		}
 
 		if( webServer.argName(i) == "portOn" ){

@@ -92,3 +92,36 @@ void wifi_ap_init(void)
 	
 	IPAddress myIP = WiFi.softAPIP();
 }
+
+void start_execution(void)
+{
+	if( !conf.execute ) return;
+	if( !conf.spiffsActive ) return;
+	if( !SPIFFS.exists( conf.execFile ) ) return;
+	
+	File fd = SPIFFS.open( conf.execFile, "r" );
+	
+	uint16_t ch = 0;
+	bool find = false;
+	
+	while( fd.available() ){
+		String line = fd.readStringUntil('\n');
+		if( ch == conf.lineNum ){
+			Serial.println( line );
+			find = true;
+			conf.lineNum++;
+			conf.lastPosition = fd.position();
+			break;
+		}
+		ch++;
+	}
+	
+	if( !find ){
+		conf.execute		= false;
+		conf.lineNum		= 0;
+		conf.lastPosition	= 0;
+		conf.execFile		= "";
+	}
+	
+	fd.close();
+}

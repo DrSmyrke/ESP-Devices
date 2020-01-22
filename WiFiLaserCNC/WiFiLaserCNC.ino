@@ -2,8 +2,8 @@
 #include "config.h"
 #include "iniConf.h"
 #include "data.h"
-#include "http.h"
 #include "functions.h"
+#include "http.h"
 #include "timer.h"
 
 void setup()
@@ -49,6 +49,7 @@ void setup()
 
 	conf.responseStr.reserve( 128 );
 	conf.response.reserve( 128 );
+	conf.execFile.reserve( 64 );
 	
 	
 	delay(100);
@@ -64,6 +65,7 @@ void loop()
 		conf.responseStr += inChar;
 		if (inChar == '\n') {
 			if( conf.responseStr == "ok" ){
+				start_execution();
 				conf.cmdState = 0;
 			}else{
 				conf.cmdState = 2;

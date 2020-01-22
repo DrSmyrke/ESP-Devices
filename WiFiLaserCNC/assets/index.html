@@ -18,6 +18,17 @@ var cmdLineAnsver = document.getElementById("cmd_line_answer");
 var cmdHistory = document.getElementById("cmd_histroy");
 var cmdlineField;
 
+function stopExecute()
+{
+	var x = confirm( "Stopping execute programm ?" );
+	if( x ){
+		var str = "stopexecute=NULL";
+		request.open( 'POST', "/set", true );
+		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		request.send(str);
+	}
+}
+
 function execute( filename )
 {
 	var x = confirm( "Continue execute programm: " + filename + "?" );
@@ -26,6 +37,19 @@ function execute( filename )
 		request.open( 'POST', "/set", true );
 		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 		request.send(str);
+	}
+}
+
+function remove( filename )
+{
+	var x = confirm( "Continue remove programm: " + filename + "?" );
+	if( x ){
+		var str = "remove=" + filename;
+		request.open( 'POST', "/set", true );
+		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		request.send(str);
+		
+		setTimeout( "location.reload", 1000 );
 	}
 }
 
