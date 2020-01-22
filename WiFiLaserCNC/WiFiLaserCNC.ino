@@ -54,6 +54,8 @@ void setup()
 	
 	delay(100);
 	timer_init();
+	
+	Serial.println("");
 }
 
 void loop()

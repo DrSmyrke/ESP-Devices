@@ -16,7 +16,6 @@
 <script type="text/javascript">
 var cmdLineAnsver = document.getElementById("cmd_line_answer");
 var cmdHistory = document.getElementById("cmd_histroy");
-var cmdlineField;
 
 function stopExecute()
 {
@@ -60,9 +59,8 @@ function sendCommand( cmdForm )
 		if( array[i].name == "" ) continue;
 		if( array[i].name == "cmdLine" ){
 			request.open( 'GET', '/gcode?' + array[i].name + '=' + array[i].value, true );request.send(null);
-			cmdlineField = array[i];
 			setTimeout( "cmdState()", 1000 );
-			cmdHistory. innerHTML += ">:" + array[i].value + "<br>";
+			cmdHistory.innerHTML += ">:" + array[i].value + "<br>";
 			break;
 		}
 	}
@@ -72,7 +70,8 @@ function sendCommand( cmdForm )
 
 function cmdState()
 {
-	request.open( 'GET', "/get&cmdState=NULL&cmdResp=NULL", true );
+	request.open( 'GET', "/get?cmdState=NULL&cmdResp=NULL", true );
+	request.send(null);
 }
 
 request.onreadystatechange=function()
@@ -86,17 +85,14 @@ request.onreadystatechange=function()
 				if( valParam[0] == "cmdState" ){
 					if( valParam[1] == 0 ){
 						cmdLineAnsver.className = "valgreen";
-						cmdlineField.disabled = false;
 					}
 					if( valParam[1] == 1 ){
-						cmdlineField.disabled = true;
 						cmdLineAnsver.innerHTML = "Processing...";
 						cmdLineAnsver.className = "valorange";
 						setTimeout( "cmdState()", 1000 );
 					}
 					if( valParam[1] == 2 ){
 						cmdLineAnsver.className = "valorange";
-						cmdlineField.disabled = false;
 					}
 				}
 				if( valParam[0] == "cmdResp" && valParam[1].length > 0 ){

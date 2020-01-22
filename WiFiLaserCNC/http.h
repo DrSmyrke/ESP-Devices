@@ -137,8 +137,9 @@ void handleGcode(void)
 	for (uint8_t i = 0; i < webServer.args(); i++) {
 		String value = webServer.arg(i);
 		if( webServer.argName(i) == "cmdLine" ){
-			Serial.println( webServer.arg(i) );
 			conf.cmdState = 1;
+			conf.response = "";
+			Serial.println( webServer.arg(i) );
 		}
 	}
 	
