@@ -1,0 +1,148 @@
+<fieldset class="block"><legend>Files</legend>
+" + str + "
+</fieldset>
+
+<fieldset class="block"><legend>History</legend>
+	<span id="cmd_histroy"></span>
+</fieldset>
+
+<fieldset class="block"><legend>G CODE Line box</legend>
+	<form onSubmit="return sendCommand(this);">
+		<input type="text" placeholder="G-CODe" name="cmdLine"> <input type="submit" value="SEND">
+		<span id="cmd_line_answer"></span>
+	</form>
+</fieldset>
+
+<script type="text/javascript">
+var cmdLineAnsver = document.getElementById("cmd_line_answer");
+var cmdHistory = document.getElementById("cmd_histroy");
+
+function stopExecute()
+{
+	var x = confirm( "Stopping execute programm ?" );
+	if( x ){
+		var str = "stopexecute=NULL";
+		request.open( 'POST', "/set", true );
+		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		request.send(str);
+	}
+}
+
+function execute( filename )
+{
+	var x = confirm( "Continue execute programm: " + filename + "?" );
+	if( x ){
+		var str = "execute=" + filename;
+		request.open( 'POST', "/set", true );
+		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		request.send(str);
+	}
+}
+
+function remove( filename )
+{
+	var x = confirm( "Continue remove programm: " + filename + "?" );
+	if( x ){
+		var str = "remove=" + filename;
+		request.open( 'POST', "/set", true );
+		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		request.send(str);
+		
+		setTimeout( "location.reload", 1000 );
+	}
+}
+
+function sendCommand( cmdForm )
+{	
+	var array = cmdForm.getElementsByTagName("INPUT");
+	for( var i = 0; i < array.length; i++ ){
+		if( array[i].name == "" ) continue;
+		if( array[i].name == "cmdLine" ){
+			cmdLineAnsver.innerHTML = "Processing...";
+			cmdLineAnsver.className = "valorange";
+			request.open( 'GET', '/gcode?' + array[i].name + '=' + array[i].value, true );request.send(null);
+			setTimeout( "cmdState()", 1000 );
+			cmdHistory.innerHTML += ">:" + array[i].value + "<br>";
+			break;
+		}
+	}
+	
+	return false;
+}
+
+function cmdState()
+{
+	request.open( 'GET', "/get?cmdState=NULL&cmdResp=NULL", true );
+	request.send(null);
+}
+
+request.onreadystatechange=function()
+{
+	if( request.readyState == 4 && request.status == 200 ){
+		var tmp = request.responseText.split("	");
+		if( tmp[0] == "get" ){
+			for( i = 1; i < tmp.length; i++ ){
+				var valParam = tmp[i].split("=");
+				if( valParam.length != 2 ) continue;
+				if( valParam[0] == "cmdState" ){
+					if( valParam[1] == 0 ){
+						cmdLineAnsver.className = "valgreen";
+					}
+					if( valParam[1] == 1 ){
+						cmdLineAnsver.innerHTML = "Processing...";
+						cmdLineAnsver.className = "valorange";
+						setTimeout( "cmdState()", 1000 );
+					}
+					if( valParam[1] == 2 ){
+						cmdLineAnsver.className = "valorange";
+					}
+				}
+				if( valParam[0] == "cmdResp" && valParam[1].length > 0 ){
+					cmdLineAnsver.innerHTML = valParam[1];
+					cmdHistory. innerHTML += "<i>" + valParam[1] + "</i><br>";
+				}
+			}
+		}
+	}
+};
+</script>
+
+
+<style>
+.checkbox-label {
+  display: block;
+  background: #f3f3f3;
+  height: 30px;
+  width: 60px;
+  border-radius: 30px;
+  margin: 15px auto;
+  position: relative;
+  box-shadow: 0 0 0 2px #dddddd;
+}
+.checkbox-label:before {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  border-radius: 30px;
+  height: 30px;
+  width: 30px;
+  background: white;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2), 0 0 0 2px #dddddd;
+}
+.checkbox {
+  position: absolute;
+  left: -5000px;
+}
+.checkbox:checked + .checkbox-label {
+  background: #13bf11;
+  box-shadow: 0 0 0 2px #13bf11;
+}
+.checkbox:checked + .checkbox-label:before {
+  left: 30px;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2), 0 0 0 2px #13bf11;
+}
+</style>
+

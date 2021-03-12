@@ -51,7 +51,7 @@ void httpGetConfig(void)
 void httpHandleIndex(void)
 {
 	//Serial.println("/");
-	if( !http_auth_check() ) return;
+	//if( !http_auth_check() ) return;
 
 	webServer.setContentLength( CONTENT_LENGTH_UNKNOWN );
 	webServer.send(200, "text/html", "");
