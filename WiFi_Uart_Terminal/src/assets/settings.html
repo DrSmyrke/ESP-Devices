@@ -1,0 +1,131 @@
+<div id="settingsBlock">
+	<fieldset class="block"><legend>Access Point</legend>
+		<table>
+			<tr><td>SSID</td><td><input type="text" id="APSSID" maxlength="16" placeholder="Wifi_Power_Shitch" value="' + String( conf.APWifiSSID ) + '"></td></tr>
+			<tr><td>Key</td><td><input type="text" id="APKey" maxlength="16" value="' + String( conf.APWifiPass ) + '"></td></tr>
+			<tr><td>IP</td><td><input type="text" id="APip" maxlength="16" placeholder="192.168.4.1" pattern="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$" value="' + aip + '"></td></tr>
+			<tr><td>Gateway</td><td><input type="text" id="APgw" maxlength="16" placeholder="0.0.0.0" pattern="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$" value="' + agw + '"></td></tr>
+			<tr><td>Mask</td><td><input type="text" id="APmask" maxlength="16" placeholder="255.255.255.0" pattern="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$" value="' + amsk + '"></td></tr>
+		</table>
+	</fieldset>
+	<fieldset class="block"><legend>Remote Access Point</legend>
+		<table>
+			<tr><td>SSID</td><td><input type="text" id="CAPSSID" maxlength="16" placeholder="SECRETNET" value="' + String( conf.clientWifiSSID ) + '"></td></tr>
+			<tr><td>Key</td><td><input type="text" id="CAPKey" maxlength="16" value="' + String( conf.clientWifiPass ) + '"></td></tr>
+		</table>
+	</fieldset>
+	<fieldset class="block"><legend>Security Access</legend>
+		<table>
+			<tr><td>Login</td><td><input type="text" id="WLogin" maxlength="16" placeholder="admin" value="' + String( conf.devLogin ) + '"></td></tr>
+			<tr><td>Password</td><td><input type="text" id="WPass" maxlength="16" placeholder="admin" value="' + String( conf.devPass ) + '"></td></tr>
+		</table>
+	</fieldset>
+	<fieldset class="block"><legend>Other</legend>
+		<table>
+			<tr><td>Device name</td><td><input type="text" id="DevName" maxlength="16" placeholder="WiFiPowerSwitch" value="' + String( conf.devName ) + '"></td></tr>
+			<tr><td colspan="3" align="center">
+			<input type="button" value="Save settings" onClick="saveSettings();">
+			 | <a href="/settings.cfg" class="a" target="_blank">Download settings</a>
+			</td></tr>
+		</table>
+		<hr>
+		<form action="/upload" method="POST" enctype="multipart/form-data"><center class="valfiol">Upload assets</center><br><input type="file" name="file"> <input type="submit" value="Upload"></form>
+	</fieldset>
+	<fieldset class="block"><legend>Ports</legend>
+		' + str + '
+	</fieldset>
+</div>
+
+<div class="action" id="prgressBox">
+	<span>Save settings...</span>
+</div>
+
+<style>
+.switcher {
+    width: 100px;
+    height:24px;  
+    background-color:silver;
+    position:relative;
+    overflow:hidden;
+    white-space:nowrap;            
+    display: inline-block;
+    border-radius:100px;                
+    padding:2px;
+    box-shadow: inset 0px 3px 10px 0px rgba(0, 0, 0, 0.4), 0px 3px 10px 0px rgba(255, 255, 255, 0.4);
+    font-size:14px;
+    -webkit-transition: all 0.3s ease-in-out;    
+	text-transform: uppercase;
+}
+.rail {
+        position: absolute;
+        top: 2px;
+        left: 7px;
+        -webkit-transition: all 0.3s ease-in-out;
+        cursor: pointer;
+}
+
+
+.state1 {
+        display: inline-block;
+        position: relative;
+        top: -7px;
+        left: 1px;
+        padding-left: 5px;
+}
+
+.state2 {
+        display: inline-block;
+        position: relative;
+        top: -7px;
+        left: -2px;
+}
+
+.slider {
+        display: inline-block;
+        height:24px;
+        width: 24px;
+        border-radius: 100px;
+        background-color:#ccc;
+        box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.2), inset 0px 1px 1px 1px rgba(255, 255, 255, 0.7);
+}
+
+:checked + .switcher .rail{ left:-67px; }
+:not(:checked) + .switcher { background-color: yellowgreen; }
+:checked + .switcher { background-color: orange; }
+</style>
+
+<script type="text/javascript">
+function saveSettings()
+{
+	document.getElementById("prgressBox").style.display = "block";
+
+	var array = document.getElementById("settingsBlock").getElementsByTagName("INPUT");
+	var updateParams = new Array();
+	var str = "";
+
+	for( var i = 0; i < array.length; i++ ){
+		if( array[i].id == "" ) continue;
+		if( i > 0 ) str += "&";
+		if( array[i].type == "checkbox" ){
+			str += array[i].id + "=";
+			str += ( array[i].checked ) ? "1" : "0" ;
+			continue;
+		}
+		str += array[i].id + "=" + array[i].value;
+	}
+
+	request.open( 'POST', "/set", true );
+	request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	request.send(str);
+}
+request.onreadystatechange = function()
+{
+	if( request.readyState == 4 && request.status == 200 ) {
+		document.getElementById("prgressBox").style.display = "none";
+	}
+	if( request.readyState == 1 && request.status == 0 ) {
+		setTimeout("if(request.readyState == 1) document.location.reload();",3000);
+	}
+	if( request.readyState == 4 && request.status == 0 ) document.location.reload();
+};
+</script>

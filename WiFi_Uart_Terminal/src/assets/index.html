@@ -1,0 +1,99 @@
+<fieldset class="block"><legend>Terminal</legend>
+	<table>
+		<tr><td id="terminalASCII"></td><td id="terminalHEX"></td></tr>
+		<tr><td colspan="2">
+			<div style="display: flex;justify-content: space-between;">
+				<span>>:</span>
+				<input type="text" onInput="app.tData = this.value;" placeholder="0x, ASCII">
+				<span> | </span>
+				<input type="button" value="SEND" onClick="sendData();">
+			</div>
+		</td></tr>
+	</table>
+</fieldset>
+
+
+
+<script type="text/javascript">
+
+var app = {
+	"response": false,
+	"debug": false,
+	"tData": "",
+};
+
+window.onload = function(){
+	update();
+};
+
+window.addEventListener("unload", function() {
+
+});
+
+function sendData()
+{
+	var request2 = makeHttpObject();
+	var str = "data=" + app.tData;
+	request2.open( 'POST', "/send", true );
+	request2.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	request2.send( str );
+}
+
+function update()
+{
+	if( !app.response ){
+		request.open( 'GET', "/update", true );
+		request.send( null );
+		app.response = true;
+	}
+
+	setTimeout( "update()", 100 );
+}
+
+request.onreadystatechange = function()
+{
+	if( request.readyState == 4 && request.status == 200 ){
+		
+		if( app.debug ){
+			console.log( request.responseText );
+			console.log( JSON.parse( request.responseText ) );
+		}
+		
+		var asciiBox		= document.getElementById( "terminalASCII" );
+		var hexBox			= document.getElementById( "terminalHEX" );
+		var obj				= JSON.parse( request.responseText );
+
+		for( var i = 0; i < obj.a.length; i++ ){
+			var sym = obj.a[i];
+			if( sym == "\\r" ) coontinue;
+			if( sym == "\\n" ){
+				asciiBox.innerHTML += "<br>";
+				continue;
+			}
+
+			asciiBox.innerHTML += sym;
+		}
+
+		for( var i = 0; i < obj.h.length; i++ ){
+			hexBox.innerHTML += obj.h[i];
+			if( i % 2 ) hexBox.innerHTML += " ";
+		}
+
+		app.response		= false;
+	}
+};
+
+</script>
+<style>
+#terminalASCII, #terminalHEX{
+	vertical-align: top;
+}
+#terminalHEX{
+	width: 30%;
+}
+.block{
+	width: 95%;
+	padding: 5px;
+	margin: 10px 0px;
+}
+</style>
